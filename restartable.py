@@ -24,6 +24,7 @@ List running processes using files deleted by recent upgrades
 Options:
     -h, --help      Get help
     -V, --version   Show version and exit
+    -a, --all       Show all mappings, not just executable mappings
     -P, --proc PROC_DIRECTORY
     -s, --short
          Create a short table not showing the deleted files. Given twice,
@@ -111,6 +112,7 @@ def main():
     Main function
     """
     argparser = ArgumentParser(usage=USAGE, add_help=False)
+    argparser.add_argument('-a', '--all', action='store_true')
     argparser.add_argument('-h', '--help', action='store_true')
     argparser.add_argument('-P', '--proc', default='/proc')
     argparser.add_argument('-s', '--short', action='count', default=0)
@@ -139,9 +141,10 @@ def main():
                     _['pathname'][:-len(" (deleted)")]
                     for _ in proc.maps
                     if (_['pathname']
-                        and 'x' in _['perms']
                         and _['pathname'].endswith(" (deleted)")
-                        and not _['pathname'].startswith(IGNORE))
+                        and (opts.all
+                             or 'x' in _['perms']
+                             and not _['pathname'].startswith(IGNORE)))
                 }
                 if deleted:
                     print_info(proc, deleted)
