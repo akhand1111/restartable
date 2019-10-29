@@ -52,11 +52,11 @@ opts = None
 services = set()
 
 
-def guess_command(proc):
+def guess_command(proc, options):
     """
     Guess the command being run
     """
-    if opts.verbose:
+    if options.verbose:
         # cmdline is empty if zombie, but zombies have void proc.maps
         if not proc.cmdline[0].startswith('/') and proc.exe:
             # Use full path
@@ -85,12 +85,19 @@ def guess_command(proc):
     return cmdline.split()[0]
 
 
+def guess_service(proc):
+    """
+    Guess the Systemd service being run
+    """
+    return re.findall(SYSTEMD_REGEX, proc.cgroup, re.MULTILINE)[0]
+
+
 def print_info(proc, deleted):
     """
     Print information
     """
     try:
-        service = re.findall(SYSTEMD_REGEX, proc.cgroup, re.MULTILINE)[0]
+        service = guess_service(proc)
     except IndexError:
         if opts.short > 1:
             return
@@ -100,7 +107,7 @@ def print_info(proc, deleted):
     else:
         uid = proc.status.Uid.real
         username = uid.name
-        cmdline = guess_command(proc)
+        cmdline = guess_command(proc, opts)
         print(FORMAT_STRING % (
             proc.pid, proc.status.PPid, uid, username, service, cmdline))
     if not opts.short:
