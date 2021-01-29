@@ -5,13 +5,11 @@ dist: focal
 matrix:
   include:
    - os: linux
-     arch: ppc64le
-   - os: linux
-     arch: s390x
-   - os: linux
      arch: amd64
    - os: linux
-     arch: arm64
+     arch: arm64-graviton2
+     virt: lxd
+     group: edge
 
 python:
   - "3.5"
